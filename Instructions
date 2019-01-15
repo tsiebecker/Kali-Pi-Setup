@@ -13,14 +13,149 @@
 	-Operating System
 	//Kali Pi (re4son-kernel)
 		https://re4son.com/re4son/download/sticky-fingers-kali-pi/
-
-#Anleitung
-
+		
 1.Download des Kali-Pi Images
 2.Extrahieren der .img Datei
 3.Formatieren der SD-Karte mit SD Card Formatter
-  Option -> "FORMAT TYPE" = QUICK
-  Option -> "FORMAT SIZE ADJUSTMENT" = ON
+	Option -> "FORMAT TYPE" = QUICK
+	Option -> "FORMAT SIZE ADJUSTMENT" = ON
 4.Überspielen der .img mit Win32DiskImager
 5.Sicheres Entfernen der SD-Karte unter Windows
 6.SD-Karte in PI + Strom + Internet + Bildschirm + Maus + Tastatur
+  Login
+	Benutzer: root Passwort: toor
+  Einstellungen ändern
+	Sprache, Tastaturbelegung, Sleep-Mode off
+		Keyboard Layout
+			uncheck use system defaults
+			keyboard model
+				-> choose (g15)
+			keyboard layout
+				-> choose (German)
+				-> delete unnessesary
+		Power Manager
+			Display
+				Display Power Management -> off
+				Blank after -> Never
+				Lock Screen -> Never
+				uncheck Lock Screen
+  SSH und Remotedesktopverbindung ermöglichen
+	apt-get update -y
+	apt-get install openssh-server xrdp -y
+	systemctl enable ssh
+	#systemctl restart ssh
+	systemctl enable xrdp
+	systemctl restart xrdp
+		ANMERKUNG
+		http://www.netzmafia.de/skripten/hardware/RasPi/RasPi_Install.html
+  IPv4 auslesen
+	ifconfig
+		eth0 -> Sowas wie 192.168.0.37
+----------------------------------------------------------------------
+Wahlweise ab hier via PuTTY oder Remotedesktopverbindung konfigurieren
+----------------------------------------------------------------------
+  Einwahl via PuTTY
+	IP -> 192.168.0.37
+	Port -> 22
+	Connection-TYPE -> SSH
+  Passwort ändern
+	passwd
+		Neues Passwort 2 mal eingeben
+  boot Editieren
+	mount /dev/mmcblk0p1
+	nano /boot/cmdline.txt
+		Nach rootwait einfügen (EINE ZEILE, NUR MIT LEERZEICHEN GETRENNT)
+			fsck.mode=force fsck.repair=yes
+				ANMERKUNG
+				see:https://raspberrypi.stackexchange.com/questions/61723/raspberry-pi-3-and-raspbian-jessie-how-to-run-fsck-at-boot
+				fsck.mode=
+				One of "auto", "force", "skip". Controls the mode of operation. The default is "auto", and ensures that file system checks are done when the file system checker deems them necessary. "force" unconditionally results in full file system checks. "skip" skips any file system checks.
+				fsck.repair=
+				One of "preen", "yes", "no". Controls the mode of operation. The default is "preen", and will automatically repair problems that can be safely fixed. "yes " will answer yes to all questions by fsck and "no" will answer no to all questions.
+			ip=192.168.0.3::192.168.0.1:255.255.255.0::eth0:off
+				ANMERKUNG
+				http://www.netzmafia.de/skripten/hardware/RasPi/RasPi_Install.html
+				oder:
+				ip=10.10.1.200
+
+				Für die einzelnen Felder der Netzwerk-Definition gilt:
+
+				client-ip: die IP, die der Raspberry bekommen soll
+				server-ip: normalerweise die IP eines Netboot-Servers, wird hier nicht benötigt!
+				gw-ip: die Gateway-IP, normalerweise die IP des Routers
+				netmask: Netzmaske, mit 255.255.255.0 liegt man meist richtig
+				hostname: Hostname des Raspberry Pi, über den er im LAN ansprechbar wäre. Wird hier nicht benötigt!
+				device: das Netzwerk-Device für das diese Zuweisung gelten soll, für das Kabel immer eth0
+				autoconf: erlaubt die Aktivierung/Deaktivierung der automatische Konfiguration. Hier wählen Sie off 
+	rm /boot/config.txt
+	cd /boot/
+	curl -O https://raw.githubusercontent.com/Evilpaul/RPi-config/master/config.txt
+	nano /boot/config.txt
+		disable_overscan=1
+		gpu_mem=32
+		initial_turbo=60
+		max_usb_current=1
+		#avoid_safe_mode=1
+		decode_MPG2=0x12345678
+		decode_WVC1=0x12345678		
+			ANMERKUNG
+			http://elinux.org/RPiconfig
+			https://github.com/Evilpaul/RPi-config/blob/master/config.txt
+	MPEG2/VC1 Lizenz Hack / Patch
+		sudo su
+		cd /boot
+		cp start.elf start.elf_backup && \
+		perl -pne 's/\x47\xE9362H\x3C\x18/\x47\xE9362H\x3C\x1F/g' < start.elf_backup > start.elf
+			ANMERKUNG
+			https://raspberry.tips/raspberrypi-tutorials/raspberry-pi-mpeg2-lizenz-hack-patch
+	shutdown -rF now
+  Neuen SSH-Host-Key erstellen
+	cd /etc/ssh
+	for F in ssh_host_*; do mv $F $F.alt; done
+	dpkg-reconfigure openssh-server
+	rm *.alt
+		ANMERKUNG
+		http://www.netzmafia.de/skripten/hardware/RasPi/RasPi_Install.html
+  SD-Karten-Resize
+	fdisk /dev/mmcblk0
+	p -> Startsektor von mmcblk0p2 notieren -> d -> 2 -> n -> p -> 2 -> Startsektor einfügen -> default-Wert einfügen -> N -> w
+	shutdown -rF now
+	resize2fs /dev/mmcblk0p2
+		ANMERKUNG
+		http://www.fabiandeitelhoff.de/2014/07/raspberry-pi-speicherplatz-der-sd-karte-ausnutzen/
+		default 15523839): 14000000 => ca 1,5MIO Differenz
+		http://www.netzmafia.de/skripten/hardware/RasPi/RasPi_Install.html
+  Zu kleine Swap-File ersetzen
+	nano /etc/fstab
+		/swapfile.img none swap sw 0 0
+	->	/swapfile none swap sw 0 0
+	fallocate -l 2G /swapfile
+	chown root:root /swapfile
+	chmod 0600 /swapfile
+	mkswap /swapfile
+	swapon /swapfile
+	swapon -s
+	shutdown -rF now
+	rm /swapfile.img
+	ANMERKUNG
+	http://www.cyberciti.biz/faq/ubuntu-linux-create-add-swap-file/
+  System-Update
+    screen -S update
+	sudo apt-get update -y && sudo apt-get upgrade -y && sudo apt-get dist-upgrade -y && sudo apt-get autoremove -y && sudo apt-get autoclean -y
+		ANMERKUNG
+		http://www.netzmafia.de/skripten/hardware/RasPi/RasPi_Install.html
+  Anwendungen installieren
+	apt-get install htop screen libcurl4-openssl-dev libssl-dev zlib1g-dev libpcap-dev gedit
+	mkdir /root/tools/
+	cd /root/tools/
+	git clone https://github.com/ZerBea/hcxdumptool.git
+	cd hcxdumptool
+	make
+	make install
+	cd ..
+	git clone https://github.com/ZerBea/hcxtools.git
+	cd hcxtools
+	make
+	make install
+		ANMERKUNG
+		https://null-byte.wonderhowto.com/how-to/hack-wi-fi-cracking-wpa2-passwords-using-new-pmkid-hashcat-attack-0189379/
