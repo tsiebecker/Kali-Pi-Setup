@@ -1,0 +1,25 @@
+#Benötigte Ressourcen
+	
+	-Software
+	//SD Card Formatter
+		https://www.sdcard.org/downloads/formatter_4/
+	//Win32DiskImager
+		http://sourceforge.net/projects/win32diskimager/
+	//WinRAR
+		http://www.winrar.de/downld.php
+	//PuTTY
+		http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html
+	
+	-Operating System
+	//Kali Pi (re4son-kernel)
+		https://re4son.com/re4son/download/sticky-fingers-kali-pi/
+
+#Anleitung
+1.Download des Kali-Pi Images
+2.Extrahieren der .img Datei
+3.Formatieren der SD-Karte mit SD Card Formatter
+	Option -> "FORMAT TYPE" = QUICK
+  Option -> "FORMAT SIZE ADJUSTMENT" = ON
+4.Überspielen der .img mit Win32DiskImager
+5.Sicheres Entfernen der SD-Karte unter Windows
+6.SD-Karte in PI + Strom + Internet + Bildschirm + Maus + Tastatur
