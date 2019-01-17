@@ -32,8 +32,58 @@
   Login
 	Benutzer: root Passwort: toor
 		ANMERKUNG
-		default: root=toor, pi=raspberry, ftp/pi=raspberry, vnc/root=toortoor (Angeblich, aber pi scheint nicht zu funktionieren)
+		checked by: 
+		cat /etc/passwd
+		default: root=toor, pi=raspberry, ftp/pi=raspberry, vnc/root=toortoor (Angeblich, aber pi scheint nicht zu funktionieren und die anderen nicht zu existieren)
   Panel -> Use default config
+  boot Editieren
+	mount /dev/mmcblk0p1
+	nano /boot/cmdline.txt
+		Nach rootwait einfügen (EINE ZEILE, NUR MIT LEERZEICHEN GETRENNT)
+			fsck.mode=force fsck.repair=yes
+				ANMERKUNG
+				see:https://raspberrypi.stackexchange.com/questions/61723/raspberry-pi-3-and-raspbian-jessie-how-to-run-fsck-at-boot
+				fsck.mode=
+				One of "auto", "force", "skip". Controls the mode of operation. The default is "auto", and ensures that file system checks are done when the file system checker deems them necessary. "force" unconditionally results in full file system checks. "skip" skips any file system checks.
+				fsck.repair=
+				One of "preen", "yes", "no". Controls the mode of operation. The default is "preen", and will automatically repair problems that can be safely fixed. "yes " will answer yes to all questions by fsck and "no" will answer no to all questions.
+#			ip=192.168.0.3::192.168.0.1:255.255.255.0::eth0:off
+#				ANMERKUNG
+#				http://www.netzmafia.de/skripten/hardware/RasPi/RasPi_Install.html
+#				oder:
+#				ip=10.10.1.200
+#
+#				Für die einzelnen Felder der Netzwerk-Definition gilt:
+#
+#				client-ip: die IP, die der Raspberry bekommen soll
+#				server-ip: normalerweise die IP eines Netboot-Servers, wird hier nicht benötigt!
+#				gw-ip: die Gateway-IP, normalerweise die IP des Routers
+#				netmask: Netzmaske, mit 255.255.255.0 liegt man meist richtig
+#				hostname: Hostname des Raspberry Pi, über den er im LAN ansprechbar wäre. Wird hier nicht benötigt!
+#				device: das Netzwerk-Device für das diese Zuweisung gelten soll, für das Kabel immer eth0
+#				autoconf: erlaubt die Aktivierung/Deaktivierung der automatische Konfiguration. Hier wählen Sie off 
+	cd
+	umount /dev/mmcblk0p1
+	shutdown -rF now
+  Einstellungen ändern (für startx)
+	Sprache, Tastaturbelegung, Sleep-Mode off
+	Applications
+		Settings -> Settings Manager
+			Keyboard
+				Layout
+					uncheck use system defaults
+					keyboard model
+						-> choose (Logitech g15)
+					keyboard layout
+						-> choose (German)
+						-> delete unnessesary
+			Power Manager
+				Display
+					Display Power Management -> off
+					Blank after -> Never
+				Security
+					Automatically lock the screen -> Never
+					uncheck Lock Screen
   Autoconfigs
 	apt-get update -y
 	kali-tft-config
@@ -83,25 +133,6 @@
 				32 wenn MPG2/WVC1 verwendet werden sollen, sonst 16
 			A4 Audio -> Auto
 		reboot
-  Einstellungen ändern
-	Sprache, Tastaturbelegung, Sleep-Mode off
-	Applications
-		Settings -> Settings Manager
-			Keyboard
-				Layout
-					uncheck use system defaults
-					keyboard model
-						-> choose (Logitech g15)
-					keyboard layout
-						-> choose (German)
-						-> delete unnessesary
-			Power Manager
-				Display
-					Display Power Management -> off
-					Blank after -> Never
-				Security
-					Automatically lock the screen -> Never
-					uncheck Lock Screen
 #  SSH und Remotedesktopverbindung ermöglichen
 #	apt-get update -y
 #	apt-get install openssh-server xrdp -y
@@ -124,39 +155,20 @@ Wahlweise ab hier via PuTTY oder Remotedesktopverbindung konfigurieren
   Passwort ändern
 	sudo passwd root
 	sudo passwd pi
-	sudo passwd ftp/pi
-	sudo passwd vnc/root
+#	sudo passwd ftp/pi
+#	sudo passwd vnc/root
 		ANMERKUNG
 		Neues Passwort 2 mal eingeben
   boot Editieren
 	mount /dev/mmcblk0p1
-	nano /boot/cmdline.txt
-		Nach rootwait einfügen (EINE ZEILE, NUR MIT LEERZEICHEN GETRENNT)
-			fsck.mode=force fsck.repair=yes
-				ANMERKUNG
-				see:https://raspberrypi.stackexchange.com/questions/61723/raspberry-pi-3-and-raspbian-jessie-how-to-run-fsck-at-boot
-				fsck.mode=
-				One of "auto", "force", "skip". Controls the mode of operation. The default is "auto", and ensures that file system checks are done when the file system checker deems them necessary. "force" unconditionally results in full file system checks. "skip" skips any file system checks.
-				fsck.repair=
-				One of "preen", "yes", "no". Controls the mode of operation. The default is "preen", and will automatically repair problems that can be safely fixed. "yes " will answer yes to all questions by fsck and "no" will answer no to all questions.
-			ip=192.168.0.3::192.168.0.1:255.255.255.0::eth0:off
-				ANMERKUNG
-				http://www.netzmafia.de/skripten/hardware/RasPi/RasPi_Install.html
-				oder:
-				ip=10.10.1.200
-
-				Für die einzelnen Felder der Netzwerk-Definition gilt:
-
-				client-ip: die IP, die der Raspberry bekommen soll
-				server-ip: normalerweise die IP eines Netboot-Servers, wird hier nicht benötigt!
-				gw-ip: die Gateway-IP, normalerweise die IP des Routers
-				netmask: Netzmaske, mit 255.255.255.0 liegt man meist richtig
-				hostname: Hostname des Raspberry Pi, über den er im LAN ansprechbar wäre. Wird hier nicht benötigt!
-				device: das Netzwerk-Device für das diese Zuweisung gelten soll, für das Kabel immer eth0
-				autoconf: erlaubt die Aktivierung/Deaktivierung der automatische Konfiguration. Hier wählen Sie off 
 	rm /boot/config.txt
+		ANMERKUNG
+		erst lesen was drin steht und übertragen, falls kalipi-config verwendet wurde
 	cd /boot/
 	curl -O https://raw.githubusercontent.com/Evilpaul/RPi-config/master/config.txt
+		ANMERKUNG
+		für bereits configuriert
+		curl -O https://raw.githubusercontent.com/tsiebecker/RPi-config/master/config.txt
 	nano /boot/config.txt
 		disable_overscan=1
 		gpu_mem=32
@@ -174,6 +186,8 @@ Wahlweise ab hier via PuTTY oder Remotedesktopverbindung konfigurieren
 		cd /boot
 		cp start.elf start.elf_backup && \
 		perl -pne 's/\x47\xE9362H\x3C\x18/\x47\xE9362H\x3C\x1F/g' < start.elf_backup > start.elf
+		cd
+		umount /dev/mmcblk0p1
 		shutdown -rF now
 		vcgencmd codec_enabled MPG2
 		vcgencmd codec_enabled WVC1
