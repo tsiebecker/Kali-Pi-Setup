@@ -7,6 +7,8 @@
 		http://sourceforge.net/projects/win32diskimager/
 	//WinRAR
 		http://www.winrar.de/downld.php
+	//sha256sum.exe
+		http://www.labtestproject.com/files/win/sha256sum/sha256sum.exe
 	//PuTTY
 		http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html
 	
@@ -15,39 +17,100 @@
 		https://re4son.com/re4son/download/sticky-fingers-kali-pi/
 		
 1.Download des Kali-Pi Images
+  Verifizieren des Kali-Pi Images
+	ANMERKUNG
+		https://docs.fedoraproject.org/de-DE/Fedora/18/html/Burning_ISO_images_to_disc/sect-Burning_ISO_images_to_disc-Validating_the_Files-Validating_at_the_Windows_Command_Prompt.html
 2.Extrahieren der .img Datei
 3.Formatieren der SD-Karte mit SD Card Formatter
 	Option -> "FORMAT TYPE" = QUICK
 	Option -> "FORMAT SIZE ADJUSTMENT" = ON
+		ANMERKUNG
+		FORMAT SIZE ADJUSTMENT in neueren Versionen nicht mehr vorhanden
 4.Überspielen der .img mit Win32DiskImager
 5.Sicheres Entfernen der SD-Karte unter Windows
 6.SD-Karte in PI + Strom + Internet + Bildschirm + Maus + Tastatur
   Login
 	Benutzer: root Passwort: toor
+		ANMERKUNG
+		default: root=toor, pi=raspberry, ftp/pi=raspberry, vnc/root=toortoor (Angeblich, aber pi scheint nicht zu funktionieren)
+  Panel -> Use default config
+  Autoconfigs
+	apt-get update -y
+	kali-tft-config
+		6 Update
+		4 Update Overlays
+		2 Remove Display
+		reboot
+	kalipi-config
+		8 Update
+		3 Boot Options
+			B1 Desktop/CLI
+				B1 Console
+			B2 Wait for Network
+				Wait? -> No
+		4 Localisation Options
+			I1 Change Locale
+				de_DE.UTF8
+			I2 Change Timezone
+				Europe
+				Berlin
+			I3 Change Keyboard Layout
+				Logitech G15
+				Other
+				German
+				The default for the keyboard layout
+				No compose key
+				ctrl+alt+back -> yes
+		2 Network Options
+			N2 Wi-fi
+				SSID -> ******
+				passphrase -> ******
+			N3 Network Interface Names
+				enable? -> No
+		5 Interfacing Options WARNING !!! Andere Optionen als SSH können zu Kernel-Panic führen !!!
+#			P1 Camera -> No
+			P2 SSH -> Yes
+#			P3 SPI -> No
+#			P4 I2C -> No
+#			P5 Serial -> Yes
+#			P6 one-wire -> No
+#			P7 GPIO -> No
+		7 Advanced Options
+			A1 Expand Filesystem
+			A2 Overscan -> No
+			A3 Memory Split -> 32
+				ANMERKUNG
+				32 wenn MPG2/WVC1 verwendet werden sollen, sonst 16
+			A4 Audio -> Auto
+		reboot
   Einstellungen ändern
 	Sprache, Tastaturbelegung, Sleep-Mode off
-		Keyboard Layout
-			uncheck use system defaults
-			keyboard model
-				-> choose (g15)
-			keyboard layout
-				-> choose (German)
-				-> delete unnessesary
-		Power Manager
-			Display
-				Display Power Management -> off
-				Blank after -> Never
-				Lock Screen -> Never
-				uncheck Lock Screen
-  SSH und Remotedesktopverbindung ermöglichen
-	apt-get update -y
-	apt-get install openssh-server xrdp -y
-	systemctl enable ssh
-	#systemctl restart ssh
-	systemctl enable xrdp
-	systemctl restart xrdp
-		ANMERKUNG
-		http://www.netzmafia.de/skripten/hardware/RasPi/RasPi_Install.html
+	Applications
+		Settings -> Settings Manager
+			Keyboard
+				Layout
+					uncheck use system defaults
+					keyboard model
+						-> choose (Logitech g15)
+					keyboard layout
+						-> choose (German)
+						-> delete unnessesary
+			Power Manager
+				Display
+					Display Power Management -> off
+					Blank after -> Never
+				Security
+					Automatically lock the screen -> Never
+					uncheck Lock Screen
+#  SSH und Remotedesktopverbindung ermöglichen
+#	apt-get update -y
+#	apt-get install openssh-server xrdp -y
+#	systemctl enable ssh
+#	systemctl restart ssh
+#	systemctl enable xrdp
+#	systemctl restart xrdp
+#		ANMERKUNG
+#		http://www.netzmafia.de/skripten/hardware/RasPi/RasPi_Install.html
   IPv4 auslesen
 	ifconfig
 		eth0 -> Sowas wie 192.168.0.37
@@ -59,7 +122,11 @@ Wahlweise ab hier via PuTTY oder Remotedesktopverbindung konfigurieren
 	Port -> 22
 	Connection-TYPE -> SSH
   Passwort ändern
-	passwd
+	sudo passwd root
+	sudo passwd pi
+	sudo passwd ftp/pi
+	sudo passwd vnc/root
+		ANMERKUNG
 		Neues Passwort 2 mal eingeben
   boot Editieren
 	mount /dev/mmcblk0p1
@@ -97,7 +164,8 @@ Wahlweise ab hier via PuTTY oder Remotedesktopverbindung konfigurieren
 		max_usb_current=1
 		#avoid_safe_mode=1
 		decode_MPG2=0x12345678
-		decode_WVC1=0x12345678		
+		decode_WVC1=0x12345678
+		hdmi_force_hotplug=1
 			ANMERKUNG
 			http://elinux.org/RPiconfig
 			https://github.com/Evilpaul/RPi-config/blob/master/config.txt
@@ -106,9 +174,11 @@ Wahlweise ab hier via PuTTY oder Remotedesktopverbindung konfigurieren
 		cd /boot
 		cp start.elf start.elf_backup && \
 		perl -pne 's/\x47\xE9362H\x3C\x18/\x47\xE9362H\x3C\x1F/g' < start.elf_backup > start.elf
+		shutdown -rF now
+		vcgencmd codec_enabled MPG2
+		vcgencmd codec_enabled WVC1
 			ANMERKUNG
 			https://raspberry.tips/raspberrypi-tutorials/raspberry-pi-mpeg2-lizenz-hack-patch
-	shutdown -rF now
   Neuen SSH-Host-Key erstellen
 	cd /etc/ssh
 	for F in ssh_host_*; do mv $F $F.alt; done
@@ -145,7 +215,7 @@ Wahlweise ab hier via PuTTY oder Remotedesktopverbindung konfigurieren
 		ANMERKUNG
 		http://www.netzmafia.de/skripten/hardware/RasPi/RasPi_Install.html
   Anwendungen installieren
-	apt-get install htop screen libcurl4-openssl-dev libssl-dev zlib1g-dev libpcap-dev gedit
+	apt-get install htop screen libcurl4-openssl-dev libssl-dev zlib1g-dev libpcap-dev gedit -y
 	mkdir /root/tools/
 	cd /root/tools/
 	git clone https://github.com/ZerBea/hcxdumptool.git
@@ -159,3 +229,54 @@ Wahlweise ab hier via PuTTY oder Remotedesktopverbindung konfigurieren
 	make install
 		ANMERKUNG
 		https://null-byte.wonderhowto.com/how-to/hack-wi-fi-cracking-wpa2-passwords-using-new-pmkid-hashcat-attack-0189379/
+  Wlan konfigurieren
+	/etc/network/interfaces
+		auto eth0
+		allow-hotplug eth0
+		iface eth0 inet static
+		address 192.168.0.3
+		netmask 255.255.255.0
+		gateway 192.168.0.1
+		
+		auto wlan0
+		allow-hotplug wlan0
+		iface wlan0 inet static
+		address 192.168.0.4
+		netmask 255.255.255.0
+		gateway 192.168.0.1
+		wpa-ap-scan 1
+		wpa-scan-ssid 1
+		wpa-ssid "Apfelkuchen"
+		wpa-psk "0123456789abcdef0123456789"
+		wireless-power off
+		#pre-up iw dev wlan0 set power_save off
+		#pre-up iw dev wlan1 set power_save off
+	/etc/sysctl.conf
+		net.ipv4.ip_forward=1
+		net.ipv6.conf.wlan0.disable_ipv6=1
+		net.ipv6.conf.wlan1.disable_ipv6=1
+		net.ipv6.conf.eth0.disable_ipv6=1
+22.//Samba Server
+	sudo apt-get install samba samba-common-bin ntfs-3g
+23.//NFS Server
+	sudo apt-get install nfs-kernel-server
+28.//Compiler
+	sudo apt-get install git-core build-essential
+30.//Java
+	sudo add-apt-repository ppa:webupd8team/java
+	sudo apt-get update
+	sudo apt-get install oracle-java8-installer
+31.//Jdownloader
+	sudo apt-get install ffmpeg
+	sudo apt-get install ubuntu-restricted-extras
+	->Java
+	sudo mkdir /home/pi/JDownloader
+	sudo chown -R pi:pi /home/pi/JDownloader
+	cd JDownloader/
+		wget http://installer.jdownloader.org/JDownloader.jar
+	java -jar /home/pi/JDownloader/JDownloader.jar -norestart	KEIN SUDO!!!
+	//Einstellung
+	Download-Ordner /home/pi/Downloads
+	MyJDownloader
+	Auto-Reconnect = OFF
+	FFmpegSetup: Binary Path /usr/bin/ffmpeg
