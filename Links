@@ -27,6 +27,9 @@ iface lo inet loopback
 
 auto eth0
 iface eth0 inet manual
+bond-master bond0
+bond-primary eth0
+bond-mode active-backup
 
 allow-hotplug usb0
 iface usb0 inet dhcp
@@ -34,23 +37,29 @@ iface usb0 inet dhcp
 auto wlan0
 iface wlan0 inet manual
 wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
+bond-master bond0
+bond-primary eth0
+bond-mode active-backup
 wpa-ap-scan 1
 wpa-scan-ssid 1
 wireless-power off
 
 auto bond0
 iface bond0 inet manual
-        slaves eth0 wlan0
-        bond-mode active-backup
+bond-slaves none
+bond-primary eth0
+bond-mode active-backup
+bond-miimon 100
 
 auto pan0
 iface pan0 inet static
-        address 192.168.0.3
-        netmask 255.255.255.0
-        network 192.168.0.0
-        broadcast 192.168.0.255
-        gateway 192.168.0.1
-        bridge_ports bond0
-        bridge_stp off
-        bridge_fd 0
-        bridge_maxwait 0
+address 192.168.0.3
+netmask 255.255.255.0
+network 192.168.0.0
+broadcast 192.168.0.255
+gateway 192.168.0.1
+bridge_ports bond0
+bridge_stp off
+bridge_fd 0
+bridge_maxwait 0
+
