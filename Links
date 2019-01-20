@@ -27,29 +27,33 @@ iface lo inet loopback
 
 auto eth0
 iface eth0 inet manual
+bond-mode active-backup
 bond-master bond0
 bond-primary eth0
-bond-mode active-backup
-
-allow-hotplug usb0
-iface usb0 inet dhcp
 
 auto wlan0
 iface wlan0 inet manual
 wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
+bond-mode active-backup
 bond-master bond0
 bond-primary eth0
-bond-mode active-backup
 wpa-ap-scan 1
 wpa-scan-ssid 1
 wireless-power off
+#post-up ( sleep 5 && systemctl restart networking )&
 
 auto bond0
 iface bond0 inet manual
+bond-mode active-backup
 bond-slaves none
 bond-primary eth0
-bond-mode active-backup
 bond-miimon 100
+#post-up ifup wlan0
+#post-up ifup eth0
+#post-up sleep 5 && systemctl restart networking
+
+allow-hotplug usb0
+iface usb0 inet dhcp
 
 auto pan0
 iface pan0 inet static
@@ -62,4 +66,3 @@ bridge_ports bond0
 bridge_stp off
 bridge_fd 0
 bridge_maxwait 0
-
