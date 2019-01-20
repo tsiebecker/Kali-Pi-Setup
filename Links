@@ -19,3 +19,37 @@ https://www.novaspirit.com/2018/04/24/kali-linux-raspberry-pi-3b-monitor-mode/
 https://www.cyberciti.biz/faq/how-to-configuring-bridging-in-debian-linux/
 https://null-byte.wonderhowto.com/how-to/hack-wi-fi-cracking-wpa2-passwords-using-new-pmkid-hashcat-attack-0189379/
 https://www.reddit.com/r/RetroPie/comments/4ckx6o/best_memory_split_for_pi_3/
+
+
+auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet manual
+
+allow-hotplug usb0
+iface usb0 inet dhcp
+
+auto wlan0
+iface wlan0 inet manual
+wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
+wpa-ap-scan 1
+wpa-scan-ssid 1
+wireless-power off
+
+auto bond0
+iface bond0 inet manual
+        slaves eth0 wlan0
+        bond-mode active-backup
+
+auto pan0
+iface pan0 inet static
+        address 192.168.0.3
+        netmask 255.255.255.0
+        network 192.168.0.0
+        broadcast 192.168.0.255
+        gateway 192.168.0.1
+        bridge_ports bond0
+        bridge_stp off
+        bridge_fd 0
+        bridge_maxwait 0
