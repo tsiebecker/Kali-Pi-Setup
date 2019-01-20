@@ -1,0 +1,248 @@
+
+https://jankarres.de/2014/07/raspberry-pi-autostart-von-programmen-einrichten/
+
+
+ifup --force wlan0
+
+
+update-alternatives --list iptables
+update-alternatives --config iptables
+
+
+#ifdown wlan0 && ifup wlan0
+#wpa_cli -i wlan0 reconfigure
+#/etc/init.d/networking restart
+systemd: Dienste manuell administrieren
+
+Beim Wechsel von "Wheezy" auf "Jessie" gab es einen Wechsel des Init-Systems von SysV-Init auf systemd. Die alten SysV-Kommandos funktionieren in der Regel auch unter systemd, aber nicht umgekehrt. Deshalb sollten Sie sich schon an die neuen systemd-Kommandos gewöhnen. Den Kern bildet das Kommando systemctl (System Control). Für Änderungen an der Konfiguration oder den Neustart von Daemons erfordert es Root-Rechte; einige Diagnose-Aufrufe dürfen auch einfache Anwender ausführen. So kann man sich den Status aller systemd-Units durch den Aufruf von systemctl ohne Parameter anzeigen lassen. Systemd-Units können auf ".service", ".socket", ".target", ".timer", ".mount", ".automount", ".device" oder ".path" enden. Wird kein Unit-Typ angehängt, dann wird standardmäßig der Typ ".service" angenommen. Über einen Parameter kann man sich mit systemctl nur Units eines bestimmten Typs auflisten lassen, etwa alle Service-Units:
+
+systemctl --type=service 
+
+Das Kommando übergibt seinen Output automatisch an less, man kann also vertikal und horizontal "blättern", z. B.:
+
+  UNIT                                 LOAD   ACTIVE SUB     DESCRIPTION
+  apache2.service                      loaded active exited  LSB: Start/stop apache2 web server
+  console-kit-daemon.service           loaded active running Console Manager
+  console-kit-log-system-start.service loaded active exited  Console System Startup Logging
+  console-setup.service                loaded active exited  LSB: Set console font and keymap
+  cron.service                         loaded active running Regular background program processing daemon
+  dbus.service                         loaded active running D-Bus System Message Bus
+  dphys-swapfile.service               loaded active exited  LSB: Autogenerate and use a swap file
+  fake-hwclock.service                 loaded active exited  Restore / save the current clock
+  getty@tty1.service                   loaded active running Getty on tty1
+  ifplugd.service                      loaded active running LSB: Brings up/down network automatically
+  ifup@wlan0.service                   loaded active exited  ifup for wlan0
+  ircd-hybrid.service                  loaded active running LSB: IRCd-Hybrid daemon init.d script
+  kbd.service                          loaded active exited  LSB: Prepare console
+  keyboard-setup.service               loaded active exited  LSB: Set preliminary keymap
+  kmod-static-nodes.service            loaded active exited  Create list of required static device nodes 
+* lightdm.service                      loaded failed failed  Light Display Manager
+  lighttpd.service                     loaded active running Lighttpd Daemon
+  ModemManager.service                 loaded active running Modem Manager
+  networking.service                   loaded active running LSB: Raise network interfaces.
+  ntp.service                          loaded active running LSB: Start NTP daemon
+  ...
+
+Bei meinem RasPi werden insgesamt 46 Dienste gelistet.
+
+Inaktive, d. h. installierte, aber nicht zum Start vorgesehene, Units gibt das Programm nur mit dem Schalter "--all" aus; dasselbe gilt für Units, die das Init-System etwa aufgrund irgendeines Fehlers nicht laden konnte. Das status-Kommando von sytemctl liefert Info über den Zustand eines Dienstes, z. B.:
+
+# systemctl status  postfix.service
+* postfix.service - LSB: Postfix Mail Transport Agent
+   Loaded: loaded (/etc/init.d/postfix)
+  Drop-In: /run/systemd/generator/postfix.service.d
+           `-50-postfix-$mail-transport-agent.conf
+   Active: active (running) since Mi 2034-09-06 08:17:11 CEST; 17 years 2 months left
+  Process: 572 ExecStart=/etc/init.d/postfix start (code=exited, status=0/SUCCESS)
+   CGroup: /system.slice/postfix.service
+           |-856 /usr/lib/postfix/master
+           |-858 pickup -l -t fifo -u -c
+           `-859 qmgr -l -t fifo -u
+
+Sep 06 08:17:11 raspi systemd[1]: Started LSB: Postfix Mail Transport Agent.
+Sep 06 08:17:11 raspi postfix[572]: Starting Postfix Mail Transport Agent: postfix.
+Sep 06 08:17:12 raspi postfix/master[856]: daemon started -- version 2.11.3, configuration /etc/postfix
+
+Das Kommando systemctl show xxx.service liefert den Status der Systemd-Konfiguration für diesen Dienst. Um einen Dienst zu stoppen, verwendet man systemctl stop ..., zum Beispiel:
+
+# systemctl stop lighttpd
+# systemctl status lighttpd
+* lighttpd.service - Lighttpd Daemon
+   Loaded: loaded (/lib/systemd/system/lighttpd.service; enabled)
+   Active: inactive (dead) since Fr 2017-06-16 17:56:46 CEST; 10s ago
+   ...
+
+Die Zeile "Active" beim Status zeigt die deaktivierung an. Der Neustart geht genauso einfach:
+
+# systemctl start lighttpd
+# systemctl status lighttpd
+* lighttpd.service - Lighttpd Daemon
+   Loaded: loaded (/lib/systemd/system/lighttpd.service; enabled)
+   Active: active (running) since Fr 2017-06-16 17:59:15 CEST; 2s ago
+   ...
+
+Soll ein Daemon in Zukunft automatisch starten, verwendet man das Kommando:
+
+systemctl enable <Dienst>
+
+Für das dauerhalte Deaktivieren des Dienstes dient:
+
+sudo systemctl disable <Dienst>
+
+Will man wissen, ob ein Dienst automatisch gestartet wird, genügt das Kommando:
+
+systemctl is-enabled <Dienst>
+
+Last but not least kann man sich die Systemd-Unit anzeigen lassen:
+
+# systemctl cat lighttpd
+
+# /lib/systemd/system/lighttpd.service
+[Unit]
+Description=Lighttpd Daemon
+After=network.target
+
+[Service]
+ExecStartPre=/usr/sbin/lighttpd -t -f /etc/lighttpd/lighttpd.conf
+ExecStart=/usr/sbin/lighttpd -D -f /etc/lighttpd/lighttpd.conf
+
+[Install]
+WantedBy=multi-user.target
+
+Auf einer frisch installierten Raspbian-Distribution laufen keine unnütze Dienste. Sie sollten Daher nicht unüberlegt irgendwelche Dienste abschalten, die sich später dann doch als wichtig herausstellen könnten. Schlimmstenfalls ver-konfigurieren Sie das System eventuell so weit, dass das System unbenutzbar wird. Vor dem Deaktivieren sollten Sie sich genau informieren, welche Auswirkungen das Deaktivieren des Dienstes haben könnte. Andererseits kann man bei einen System, das sowieso nur per SSH angesprochen wird und das ohne Monitor und Tastatur läuft, die ganzen Dienste für das Desktop Environment deaktivieren, um so Arbeitsspeicher und Rechenpower zu gewinnen.
+Informationskommandos
+Der Raspberry Pi informiert mit deversen Kommandos über sämtlich Interna. Einfach mal die Kommandos ausprobieren (Beschreibung gibt es immer mit man <Kommando>:
+
+free	Arbeitsspeicherverwendung
+df	Speicherplatz auf gemounteten Geräten
+uptime	Anzeige der Systemlast und der Uptime, s. o.
+hostname	Anzeige des Hostname
+uname	OS-Namen anzeigen
+ifconfig	Informationen über Netzwerkgeräte (nur als root)
+iwconfig	desgleichen für WLAN-Benutzer
+top	kurze Systeminformationen und Anzeige der Prozesse
+ps	Anzeige der Prozesse
+dmesg	Alle Systemstart-Informationen des Kernels
+lscpu	Infos über CPU, Rechnerkerne etc. auflisten
+lsdev	Devices (Geräte) auflisten
+lsblk	Block-Devices auflisten
+lshw	Alle Daten der Hardware auflisten
+lsof	Offene Dateien und Sockets auflisten
+lsmod	Module auflisten
+lspci	PCI-Bus auflisten
+lsusb	USB-Devices auflisten
+lsscsi	Daten über SCSI-Geräte auflisten (Platte, DVD, usw.)
+lsattr	Dateisystem-Attribute auflisten
+
+
+Schreibzugriff auf SD-Karte reduzieren
+Werden bestimmte Dateien regelmäßig erstellt oder geändert, z. B. Bilddateien einer Webcam oder Messwerte, sollten diese möglichst ins RAM oder einen USB-Speicher ausgelagert werden, denn das ständige Löschen und Wiederbeschreiben ist trotz aller schlauer Algorithmen der Controllerbausteine Gift für die Lebensdauer der SD-Karte. Deshalb sollte für alle Dateien eine RAM-Disk eingerichtet werden - bei der sogar ein noch schnellerer Zugriff als Nebeneffekt hinzukommt. Dazu gibt es zwei Möglichkeiten:
+
+Die Verwendung des tmpfs-Dateisystems:
+Das tmpfs-Dateisystem ist eigentlich kein reines RAM-Dateisystem, sondern die Daten landen im Festplatten-Swap, sobald der Speicherplatz im RAM knapp wird. Mit dem folgenden Shell-Befehl wird das Verzeichnis /var/tmp zur RAM-Disk:
+
+sudo mount -t tmpfs none /var/tmp
+
+oder, falls die Größe festgelegt werden soll:
+
+sudo mount -t tmpfs -o size=5M none /var/tmp
+
+Es werden dynamisch immer so viele Ressourcen abgezweigt, wie gerade benötigt werden, auch wenn eine Größe angegeben wurde. Ist das Laufwerk also leer, belegt es auch keinen Platz im RAM. Es ist möglich, diese Partition standardmäßig beim Systemstart einzubinden, indem man eine Zeile in die Datei /etc/fstab einfügt:
+
+tmpfs    /var/tmp    tmpfs    defaults,size=5M      0       0
+
+Um beispielsweise /var/log und /var/run in den Arbeitsspeicher auszulagern, müssen Sie folgende Einträge in der /etc/fstab hinzufügen:
+
+none    /var/run     tmpfs    size=5M,noatime       0       0
+none    /var/log     tmpfs    size=5M,noatime       0       0
+
+Die Verwendung des ramfs-Dateisystems:
+Das ramfs-Dateisystem lagert im Gegensatz zum tmpfs keine Daten in den Swap aus, ist also ein reines RAM-Dateisystem. Die Kommandos sind fast identisch wie oben:
+
+sudo mount -t ramfs ramfs /var/tmp
+
+Damit erhält man eine RAM-Disk, die sich ebenfalls dynamisch der benötigten Größe anpasst. Um die Partition beim Systemstart automatisch einzuhängen, fügt folgende Zeile in der Datei /etc/fstab hinzu:
+
+ramfs   /var/tmp     ramfs   defaults        0       0
+
+Das ramfs-Dateisystem hat im Gegensatz zu tmpfs keine Mountoptionen und bietet somit auch keine Möglichkeit, die Größe zu limitieren. Eventuell hat das System dann keinen freien Hauptspeicher mehr zur Verfügung und kann nur noch auf die Festplatte auslagern.
+
+Verlagern Sie Dateien und Verzeichnisse auf diese Weise ins RAM, sollte Ihnen klar sein, dass diese nach einem Neustart nicht mehr verfügbar sind. 
+
+
+
+Module laden/entladen
+
+Grundsätzlich ist der Linux-Kernel monolithisch aufgebaut, er bietet jedoch die Möglichkeit, zusätzliche Treiber, die sogenannten Kernel-Module, zur Laufzeit zu laden und entladen. Die meisten Linux-Distributionen verwenden etliche Kernel-Module, da die bestmögliche Hardwarekompatibilität beim Booten mit nur einem sehr einfachen, allgemein gehaltenen Kernel erreicht werden kann. Nach den Bootvorgang werden entsprechend der erkannten Hardware alle noch notwendigen Module geladen, so dass der Nutzer sich nicht weiter darum kümmern muss. Bei optionalen Modulen, wie z. B. das bei der Activity-LED verwendete ledtrig_heartbeat muss der Administrator jedoch selbst aktiv werden.
+
+Für die Modulverwaltung gibt es einige Kommandos:
+
+    lsmod: Alle gelandenen Module auflisten
+    modinfo <Modul>: Info zu einem Modul anzeigen
+    modprobe: Modul(e) inklusive Abhängigkeiten laden
+    insmod <Modul>: Modul(e) laden
+    rmmod <Modul>: Modul(e) entfernen
+    depmod: Abhängigkeitsliste erstellen 
+
+Anmerkungen:
+insmod hat im Gegensatz zu modprobe den Nachteil, dass eventuelle Abhängigkeiten der Module nicht automatisch aufgelöst werden. Im Gegensatz zu modprobe -r werden bei rmmod Module, die aus Abhängigkeitsgründen zum entfernenden Modul in den Kernel geladen wurden, nicht mit entfernt. Daher ist modprobe <Optionen> <Modul(e)> das Kommando der Wahl für das Ein- und Aushängen von Modulen.
+
+Die wichtigste Optionen von modprobe sind:
+Option	Beschreibung
+-v	Erzeugt eine ausführliche Ausgabe
+-n	Simuliert das Laden des Moduls, lädt es aber nicht.
+-a	Lade alle in der Kommandozeile angegebenen Module. Nötig, wenn mehrere Module auf einmal geladen werden.
+--show-depends	Zeige alle Abhängigkeiten des Moduls.
+-l	Liste alle verfügbaren Module (geladen oder nicht geladen).
+-r	Entladen der angegebenen Module.
+
+Manche Module können erst verwendet werden, wenn andere Module geladen sind, von denen sie abhängen. Diese Abhängigkeiten stehen in der Datei /lib/module/<Kernelversion>/modules.dep. Diese Datei wird bei der Installationerzeugt. Installiert man zusätzliche eigene Module, muss die Datei mit depmod neu erstellt werden.
+
+Nach dieser langen Vorrede, endlich die Lösung des eingangs beschriebenen Problems: Möchte man ein nicht standardmäßig vom Kernel geladenes Modul beim Systemstart automatisch laden, so trägt man den Modulnamen einfach in die Datei /etc/modules ein (Editieren mit root-Rechten).Pro Zeile wird nur ein einziger Modulname eingetragen. Ab dem nächsten Bootvorgang werden alle angegebenen Module (zusätzlich) geladen.
+
+Soll ein Modul immer mit bestimmten Option(en) geladen werden, kann dies in der Datei /etc/modprobe.conf eingetragen werden. Diese Datei muss ggf. angelegt werden. Es gibt auch hier nur einen Eintrag pro Zeile. Um eine Option zu setzen, gibt man ein:
+
+options Modulname1 Option1=Wert1
+options Modulname2 Option1=Wert Option2=Wert ...
+
+Manchmal kann es sinnvoll sein, das Laden bestimmter Module explizit zu verbieten. Dies geschieht durch den Eintrag des entsprechenden Moduls in eine Blacklist-Datei. Am einfachsten geht das mit zusätzlichen Einträge in der Datei /etc/modprobe.d/blacklist.conf. Auch hier gilt: nur ein Eintrag pro Zeile:
+
+blacklist    Modulname1
+blacklist    Modulname2
+   ...
+
+
+
+Routing prüfen
+Funktioniert das lokale Netz (überprüfen mit dem ping-Kommando), gibt es aber keine Verbindung zum Internet, kann es am Routing liegen. Das sogenannte Standard-Gateway ist in einem Netz der Router in das Internet - also die Netzkomponente, die häufig vom Internet-Provider zur Verfügung gestellt wird. Die Verbindung ins Internet ist nur dann möglich, wenn ein Host die IP-Adresse des Standard-Gateways kennt. Überprüfen können Sie dies mit dem route- oder netstat-Kommando:
+
+$ route -n
+Kernel-IP-Routentabelle
+Ziel            Router          Genmask         Flags Metric Ref    Use Iface
+0.0.0.0         10.27.1.1       0.0.0.0         UG    0      0        0 eth0
+10.10.0.0       0.0.0.0         255.255.0.0     U     0      0        0 eth0
+10.27.0.0       0.0.0.0         255.255.0.0     U     0      0        0 eth0
+
+$ netstat -r
+Kernel-IP-Routentabelle
+Ziel            Router          Genmask         Flags   MSS Fenster irtt Iface
+default         10.27.1.1       0.0.0.0         UG        0 0          0 eth0
+10.10.0.0       *               255.255.0.0     U         0 0          0 eth0
+10.27.0.0       *               255.255.0.0     U         0 0          0 eth0
+
+Die Standard- bzw. Default-Route (die immer dann gilt, wenn der Host die Route zur Ziel-Adresse nicht kennt) ist in der aufgelisteten Routing-Tabelle daran zu erkennen, dass sie mit "0.0.0.0" oder "default" beginnt. Gibt es keine Zeile mit "0.0.0.0" oder "default" oder ist hier eine falsche IP-Adresse eingetragen, wird in der Regel keine Verbindung ins Internet möglich sein. Der Grund für das Fehlen des Standard-Gateways ist eine unvollständige bzw. fehlerhafte manuelle IP-Konfiguration - oder es fand überhaupt keine IP-Konfiguration statt.
+
+Enthält die Tabelle eine Standard-Route, entspricht die angegebene IP-Adresse der des Standard-Gateways und es ist trotzdem keine Internet-Verbindung möglich, hat das Standard-Gateway möglicherweise keine Verbindung zum Internet oder es ist ausgeschaltet. Das kann man mit einem Ping auf das Standard-Gateway klären. Ist das Standard-Gateway selbst erreichbar, dann stimmt zumindest die Konfiguration bezüglich des Standard-Gateways. Zum Test kann man eine Route auch manuell eintippen:
+
+sudo route add default gw 10.27.1.1
+
+Alternativ kann auch das Kommando ip verwendet werden, um die Routing-Tabelle auszugeben:
+
+ip route
+
+Das Kommando eigent sich auch, die Interfaces anzuzeigen:
+
+ip addr
+
+und natürlich für alle anderen Netzwerkeinstellungen. 
+
