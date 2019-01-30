@@ -85,6 +85,12 @@
 				Security
 					Automatically lock the screen -> Never
 					uncheck Lock Screen
+  ## Stable repository
+  echo "deb http://http.re4son-kernel.com/re4son/ kali-pi main" > /etc/apt/sources.list.d/re4son.list
+  wget -O - https://re4son-kernel.com/keys/http/archive-key.asc | apt-key add -
+  apt update
+  apt install -y kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers libraspberrypi0 libraspberrypi-dev libraspberrypi-doc libraspberrypi-bin
+ 
   Autoconfigs
 	apt-get update -y
 	kali-tft-config
