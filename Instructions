@@ -90,7 +90,11 @@
   wget -O - https://re4son-kernel.com/keys/http/archive-key.asc | apt-key add -
   apt update
   apt install -y kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers libraspberrypi0 libraspberrypi-dev libraspberrypi-doc libraspberrypi-bin
- 
+  ## For current stable
+  wget  -O re4son-kernel_current.tar.xz https://re4son-kernel.com/download/re4son-kernel-current/
+  tar -xJf re4son-kernel_current.tar.xz
+  cd re4son-kernel_4*
+  ./install.sh
   Autoconfigs
 	apt-get update -y
 	kali-tft-config
