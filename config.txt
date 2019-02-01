@@ -89,7 +89,7 @@
 ##     0        Disabled (Default)
 ##     1        Use HDMI mode even if no HDMI monitor is detected
 ##
-#hdmi_force_hotplug=1
+hdmi_force_hotplug=1
 
 ## hdmi_ignore_hotplug
 ##     Pretends HDMI hotplug signal is not asserted so it appears a HDMI
@@ -369,7 +369,7 @@
 ##     0        Overscan Enabled (Default)
 ##     1        Overscan Disabled
 ##
-#disable_overscan=1
+disable_overscan=1
 
 ################################################################################
 ##  Framebuffer Video Settings
@@ -452,12 +452,12 @@
 ## decode_MPG2
 ##     License key to allow hardware MPEG-2 decoding.
 ##
-#decode_MPG2=0x12345678
+decode_MPG2=0x12345678
 
 ## decode_WVC1
 ##     License key to allow hardware VC-1 decoding.
 ##
-#decode_WVC1=0x12345678
+decode_WVC1=0x12345678
 
 ################################################################################
 ##  Camera Settings
@@ -518,7 +518,7 @@
 ##
 ##     Default 64
 ##
-#gpu_mem=128
+gpu_mem=32
 
 ## gpu_mem_256
 ##     GPU memory allocation in MB for 256MB board revision.
@@ -738,7 +738,7 @@
 ##
 ##     Default 0
 ##
-#initial_turbo=0
+initial_turbo=60
 
 ## temp_limit
 ##     Overheat protection. Sets clocks and voltages to default when the SoC
@@ -1057,7 +1057,7 @@
 ##
 ##     Default 0.
 ##
-#max_usb_current=0
+max_usb_current=1
 
 ################################################################################
 ##  Base Device Tree Parameters
