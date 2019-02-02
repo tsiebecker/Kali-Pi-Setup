@@ -7,6 +7,7 @@ kill) KILL=${OPTARG};;
 esac
 done
 
+airmon-ng check kill ;
 ifdown --force wlan1 ;
 ifconfig wlan1 down ;
 iwconfig wlan1 mode managed ;
