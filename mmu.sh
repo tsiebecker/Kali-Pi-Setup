@@ -56,16 +56,20 @@ You don't necessarily need all of those housekeeping items. For example, perhaps
 
 multiline_comment
 
-if [ ${NO_KILL} == false ]; 
+if [ ${NO_KILL} == false ];
 then
+	rfkill unblock all || { echo "Fatal ERROR could NOT run \"rfkill unblock all\""; ERROR=1; }
 	airmon-ng check kill || { echo "Fatal ERROR could NOT run \"airmon-ng check kill\""; ERROR=1; }
+	rfkill unblock all || { echo "Fatal ERROR could NOT run \"rfkill unblock all\""; ERROR=1; }
 fi
 
 ifdown wlan${W} || ifdown --force wlan${W} || ip link set wlan${W} down || ifconfig wlan wlan${W} down || { echo "Fatal ERROR could NOT set interface wlan${W} down"; ERROR=1; }
 
+iw dev wlan${W} set power_save off || iwconfig wlan${W} power off || echo "ERROR Stromsparmodus konnte NICHT deaktiviert werden";
+
 iwconfig wlan${W} txpower 50 || if [ $? != 2 ]; then iw dev wlan${W} set txpower fixed 50mBm; fi || { if [ $? != 2 ]; then echo "Fatal ERROR could NOT set txpower on wlan${W}"; ERROR=1; fi }
 
-iw wlan${W} set monitor control || { echo "Warnung, keine \"control\" Packets"; iw wlan${W} set monitor none; } || { echo "Warnung, airmon-ng"; airmon-ng start wlan${W}; } || { echo "Fatal ERROR could NOT #start MONITOR-MODE on interface wlan${W}"; ERROR=1; }
+iw wlan${W} set monitor control || { echo "Warnung, keine \"control\" Packets"; iw wlan${W} set monitor none; } || iw wlan${W} set type monitor || { echo "Warnung, airmon-ng"; airmon-ng start wlan${W}; } || { echo "Fatal ERROR could NOT #start MONITOR-MODE on interface wlan${W}"; ERROR=1; }
 
 ip link set wlan${W} up || { OUT=1; ip link set wlan${W}mon up; } || { OUT=0; ifconfig wlan${W} up; } || { OUT=1; ifconfig wlan${W}mon up; } || { echo "Fatal ERROR could NOT set interface wlan${W} or interface wlan${W}mon up"; ERROR=1; }
 
@@ -81,4 +85,3 @@ then
 		echo "MONITOR-MODE wurde auf interface wlan${W}mon gestartet :)";
 	fi
 fi
-
