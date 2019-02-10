@@ -5,7 +5,7 @@ FILEDIR="files";
 DATADIR="database";
 ALL="";
 
-while getopts s:f:d: arguments; do
+while getopts as:f:d: arguments; do
   case $arguments in
     s )  INDIR="$OPTARG" ;;
     f )  FILEDIR="$OPTARG" ;;
