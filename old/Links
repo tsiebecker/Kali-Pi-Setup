@@ -4,6 +4,7 @@ sudo apt-get update -y && sudo apt-get install kali-linux-all -y && sudo apt-get
 http://www.netzmafia.de/skripten/hardware/RasPi/RasPi_Network.html
 https://hashcat.net/forum/thread-6661-page-27.html
 https://hashcat.net/forum/thread-7337-page-2.html
+https://hashcat.net/forum/thread-6661-post-40476.html#pid40476
 https://stackoverflow.com/questions/28304163/ip-over-bluetooth-with-raspbian-systems/40579423#40579423
 https://samiux.blogspot.com/2015/02/howto-network-interfaces-bonding-on.html
 https://unix.stackexchange.com/questions/345862/is-it-possible-to-have-multiple-default-gateways-for-outbound-connections
