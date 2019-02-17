@@ -3,10 +3,12 @@ W=0;
 NO_KILL=false;
 ERROR=0;
 OUT=0;
+POWER=50;
 
-while getopts w:-: arguments; do
+while getopts w:p:-: arguments; do
   case $arguments in
     w )  W="$OPTARG" ;;
+    p )  POWER="$OPTARG" ;;
     - )  LONG_OPTARG="${OPTARG#*=}"
          case $OPTARG in
            nokill    )  NO_KILL=true ;;
@@ -19,7 +21,7 @@ while getopts w:-: arguments; do
   esac
 done
 shift $((OPTIND-1)) # remove parsed options and args from $@ list
-
+echo ${POWER}
 :<<'multiline_comment'
 while getopts ab:c-: arguments; do
   case $arguments in
@@ -67,7 +69,7 @@ ifdown wlan${W} || ifdown --force wlan${W} || ip link set wlan${W} down || ifcon
 
 iw dev wlan${W} set power_save off || iwconfig wlan${W} power off || echo "ERROR Stromsparmodus konnte NICHT deaktiviert werden";
 
-iwconfig wlan${W} txpower 50 || if [ $? != 2 ]; then iw dev wlan${W} set txpower fixed 50mBm; fi || { if [ $? != 2 ]; then echo "Fatal ERROR could NOT set txpower on wlan${W}"; ERROR=1; fi }
+iwconfig wlan${W} txpower ${POWER} || if [ $? != 2 ]; then iw dev wlan${W} set txpower fixed ${POWER}mBm; fi || { if [ $? != 2 ]; then echo "Fatal ERROR could NOT set txpower on wlan${W}"; ERROR=1; fi }
 
 iw wlan${W} set monitor control || { echo "Warnung, keine \"control\" Packets"; iw wlan${W} set monitor none; } || iw wlan${W} set type monitor || { echo "Warnung, airmon-ng"; airmon-ng start wlan${W}; } || { echo "Fatal ERROR could NOT #start MONITOR-MODE on interface wlan${W}"; ERROR=1; }
 
