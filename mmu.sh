@@ -4,10 +4,12 @@ NO_KILL=false;
 ERROR=0;
 OUT=0;
 POWER=50;
+CHANNEL=6;
 
-while getopts w:p:-: arguments; do
+while getopts c:w:p:-: arguments; do
   case $arguments in
     w )  W="$OPTARG" ;;
+    c )  CHANNEL="$OPTARG" ;;
     p )  POWER="$OPTARG" ;;
     - )  LONG_OPTARG="${OPTARG#*=}"
          case $OPTARG in
@@ -68,6 +70,8 @@ fi
 ifdown wlan${W} || ifdown --force wlan${W} || ip link set wlan${W} down || ifconfig wlan wlan${W} down || { echo "Fatal ERROR could NOT set interface wlan${W} down"; ERROR=1; }
 
 iw dev wlan${W} set power_save off || iwconfig wlan${W} power off || echo "ERROR Stromsparmodus konnte NICHT deaktiviert werden";
+
+iw wlan${W} set channel ${CHANNEL} || iwconfig wlan${W} channel ${CHANNEL} || echo "Fatal ERROR could NOT set interface wlan${W} to channel ${CHANNEL}"
 
 iwconfig wlan${W} txpower ${POWER} || if [ $? != 2 ]; then iw dev wlan${W} set txpower fixed ${POWER}mBm; fi || { if [ $? != 2 ]; then echo "Fatal ERROR could NOT set txpower on wlan${W}"; ERROR=1; fi }
 
