@@ -36,7 +36,8 @@ rm ${OUTDIR}"database_probe(E)_list.db.tmp"
 
 cat ${INDIR}I >> ${OUTDIR}"database_identitiy(I)_list.db"
 sort -u ${OUTDIR}"database_identitiy(I)_list.db" > ${OUTDIR}"database_identitiy(I)_list.db.tmp"
-cat ${OUTDIR}"database_identitiy(I)_list.db.tmp" > ${OUTDIR}"database_identitiy(I)_list.db"
+cat ${OUTDIR}"database_identitiy(I)_list.db.tmp" | grep "\$HEX\[.*]" >> ${OUTDIR}"HEX_list.db.tmp"
+cat ${OUTDIR}"database_identitiy(I)_list.db.tmp" | grep -v "\$HEX\[.*]" > ${OUTDIR}"database_identitiy(I)_list.db"
 rm ${OUTDIR}"database_identitiy(I)_list.db.tmp"
 
 cat ${INDIR}U >> ${OUTDIR}"database_username(U)_list.db"
