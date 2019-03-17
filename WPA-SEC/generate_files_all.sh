@@ -4,14 +4,24 @@ INDIR="source";
 OUTDIR="files/$(echo -e "$(date)" | tr -d '[:space:]')";
 REMOVE="";
 BACKUP_DIR="source_old";
+#Default NONCE = 8, see generate_files_one
+NONCE_ERROR_CORRECTIONS=128;
+TIME_ERROR_CORRECTIONS=600;
+#TODO: "-V" to ""
+VERBOSE="-V";
 
-while getopts i:o:r-: arguments; do
+while getopts i:o:rV-: arguments; do
   case $arguments in
     i )  INDIR="$OPTARG" ;;
     o )  OUTDIR="$OPTARG" ;;
     r )  REMOVE="-r" ;;
+    V )  VERBOSE="-V" ;;
     - )  LONG_OPTARG="${OPTARG#*=}"
          case $OPTARG in
+	   NONCE_ERROR_CORRECTIONS=?* )  NONCE_ERROR_CORRECTIONS="$LONG_OPTARG" ;;
+	   NONCE_ERROR_CORRECTIONS*   )  echo "No arg for --$OPTARG option" >&2; exit 2 ;;
+	   TIME_ERROR_CORRECTIONS=?* )  TIME_ERROR_CORRECTIONS="$LONG_OPTARG" ;;
+	   TIME_ERROR_CORRECTIONS*   )  echo "No arg for --$OPTARG option" >&2; exit 2 ;;
            BACKUP_DIR=?* )  ARG_B="$LONG_OPTARG" ;;
            BACKUP_DIR*   )  echo "No arg for --$OPTARG option" >&2; exit 2 ;;
            '' )        break ;; # "--" terminates argument processing
@@ -28,8 +38,7 @@ if [ "${OUTDIR: -1}" != "/" ]; then OUTDIR="${OUTDIR}/"; fi
 
 
 param="" ;
-#for file in $(find -L ${INDIR}) ; do name=${file##*/} ; if [ "${name}" != "${INDIR}" ] && [ "${name}" != "" ] ; then ./generate_files_one.sh -i ${file} -o ${OUTDIR}${name}; fi ; done
 for file in $(find -L ${INDIR}) ; do name=${file##*/} ; if [ "${name}" != "${INDIR}" ] && [ "${name}" != "" ] && [ -f "${file}" ]; then param="${param} -i ${file}" ; fi ; done ; 
 
-./generate_files_one.sh ${param} -o ${OUTDIR} ${REMOVE} "--BACKUP_DIR=${BACKUP_DIR}"
+./generate_files_one.sh ${param} -o ${OUTDIR} ${REMOVE} ${VERBOSE} "--BACKUP_DIR=${BACKUP_DIR}" "--NONCE_ERROR_CORRECTIONS=${NONCE_ERROR_CORRECTIONS}" "--TIME_ERROR_CORRECTIONS=${TIME_ERROR_CORRECTIONS}"
 
