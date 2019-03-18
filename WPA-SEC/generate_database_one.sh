@@ -20,67 +20,64 @@ if [ "${INDIR: -1}" != "/" ]; then INDIR=${INDIR}"/"; fi
 if [ "${OUTDIR}" != "" ] ; then mkdir ${OUTDIR}; fi
 if [ "${OUTDIR: -1}" != "/" ]; then OUTDIR=${OUTDIR}"/"; fi
 
-cat ${INDIR}o >> ${OUTDIR}database_best.hccapx
-cat ${INDIR}o ${INDIR}O >> ${OUTDIR}database_all.hccapx
+cat ${INDIR}o >> ${OUTDIR}"database_best.hccapx"
+cat ${INDIR}o >> ${OUTDIR}"database_all.hccapx"
+cat ${INDIR}O >> ${OUTDIR}"database_all.hccapx"
 
-cat ${INDIR}z >> ${OUTDIR}database_pmkid_only.hccapx
-sort -u ${OUTDIR}"database_pmkid_only.hccapx" > ${OUTDIR}"database_pmkid_only.hccapx.tmp"
-cat ${OUTDIR}"database_pmkid_only.hccapx.tmp" > ${OUTDIR}"database_pmkid_only.hccapx"
-rm ${OUTDIR}"database_pmkid_only.hccapx.tmp"
+cat ${INDIR}z >> ${OUTDIR}"database_pmkid_only.hccapx"
+sort -uo ${OUTDIR}"database_pmkid_only.hccapx" ${OUTDIR}"database_pmkid_only.hccapx"
 
 cat ${INDIR}E >> ${OUTDIR}"database_probe(E)_list.db"
-sort -u ${OUTDIR}"database_probe(E)_list.db" > ${OUTDIR}"database_probe(E)_list.db.tmp"
-cat ${OUTDIR}"database_probe(E)_list.db.tmp" | grep "\$HEX\[.*]" >> ${OUTDIR}"HEX_list.db.tmp"
-cat ${OUTDIR}"database_probe(E)_list.db.tmp" | grep -v "\$HEX\[.*]" > ${OUTDIR}"database_probe(E)_list.db"
-rm ${OUTDIR}"database_probe(E)_list.db.tmp"
+sort -uo ${OUTDIR}"database_probe(E)_list.db" ${OUTDIR}"database_probe(E)_list.db"
+cat ${OUTDIR}"database_probe(E)_list.db" | grep "\$HEX\[.*]" >> ${OUTDIR}"HEX_list.db.tmp"
+#ANM: https://askubuntu.com/questions/752174/reading-and-writing-a-file-tee-command/752451#752451
+cat ${OUTDIR}"database_probe(E)_list.db" | grep -v "\$HEX\[.*]" | sponge ${OUTDIR}"database_probe(E)_list.db"
 
 cat ${INDIR}I >> ${OUTDIR}"database_identitiy(I)_list.db"
-sort -u ${OUTDIR}"database_identitiy(I)_list.db" > ${OUTDIR}"database_identitiy(I)_list.db.tmp"
-cat ${OUTDIR}"database_identitiy(I)_list.db.tmp" | grep "\$HEX\[.*]" >> ${OUTDIR}"HEX_list.db.tmp"
-cat ${OUTDIR}"database_identitiy(I)_list.db.tmp" | grep -v "\$HEX\[.*]" > ${OUTDIR}"database_identitiy(I)_list.db"
-rm ${OUTDIR}"database_identitiy(I)_list.db.tmp"
+sort -uo ${OUTDIR}"database_identitiy(I)_list.db" ${OUTDIR}"database_identitiy(I)_list.db"
+cat ${OUTDIR}"database_identitiy(I)_list.db" | grep "\$HEX\[.*]" >> ${OUTDIR}"HEX_list.db.tmp"
+cat ${OUTDIR}"database_identitiy(I)_list.db" | grep -v "\$HEX\[.*]" | sponge ${OUTDIR}"database_identitiy(I)_list.db"
 
 cat ${INDIR}U >> ${OUTDIR}"database_username(U)_list.db"
-sort -u ${OUTDIR}"database_username(U)_list.db" > ${OUTDIR}"database_username(U)_list.db.tmp"
-cat ${OUTDIR}"database_username(U)_list.db.tmp" > ${OUTDIR}"database_username(U)_list.db"
-rm ${OUTDIR}"database_username(U)_list.db.tmp"
+sort -uo ${OUTDIR}"database_username(U)_list.db" ${OUTDIR}"database_username(U)_list.db"
+cat ${OUTDIR}"database_username(U)_list.db" | grep "\$HEX\[.*]" >> ${OUTDIR}"HEX_list.db.tmp"
+cat ${OUTDIR}"database_username(U)_list.db" | grep -v "\$HEX\[.*]" | sponge ${OUTDIR}"database_username(U)_list.db"
 
 cat ${INDIR}P >> ${OUTDIR}"database_pmk(P)_list.db"
-sort -u ${OUTDIR}"database_pmk(P)_list.db" > ${OUTDIR}"database_pmk(P)_list.db.tmp"
-cat ${OUTDIR}"database_pmk(P)_list.db.tmp" > ${OUTDIR}"database_pmk(P)_list.db"
-rm ${OUTDIR}"database_pmk(P)_list.db.tmp"
+sort -uo ${OUTDIR}"database_pmk(P)_list.db" ${OUTDIR}"database_pmk(P)_list.db"
 
 cat ${OUTDIR}database_*_list.db >> ${OUTDIR}"workinglist.db"
-#sort -u ${OUTDIR}"workinglist.tmp" > ${OUTDIR}"workinglist.db"
-#rm ${OUTDIR}"workinglist.tmp"
+#TODO: remove sort (duplicate)
+sort -uo ${OUTDIR}"workinglist.db" ${OUTDIR}"workinglist.db"
 
 cat ${INDIR}X >> ${OUTDIR}"database_client_probe(X)_list.db"
-sort -u ${OUTDIR}"database_client_probe(X)_list.db" > ${OUTDIR}"database_client_probe(X)_list.db.tmp"
-cat ${OUTDIR}"database_client_probe(X)_list.db.tmp" | grep "\$HEX\[.*]" >> ${OUTDIR}"HEX_list.db.tmp"
-cat ${OUTDIR}"database_client_probe(X)_list.db.tmp" | grep -v "\$HEX\[.*]" > ${OUTDIR}"database_client_probe(X)_list.db"
-rm ${OUTDIR}"database_client_probe(X)_list.db.tmp"
+sort -uo ${OUTDIR}"database_client_probe(X)_list.db" ${OUTDIR}"database_client_probe(X)_list.db"
+cat ${OUTDIR}"database_client_probe(X)_list.db" | grep "\$HEX\[.*]" >> ${OUTDIR}"HEX_list.db.tmp"
+cat ${OUTDIR}"database_client_probe(X)_list.db" | grep -v "\$HEX\[.*]" | sponge ${OUTDIR}"database_client_probe(X)_list.db"
 
 while IFS="" read p || [ -n "$p" ]
 do
 	echo "${p#*:}" >> ${OUTDIR}"workinglist.db"
 done < ${OUTDIR}"database_client_probe(X)_list.db"
 
+#TODO: remove sort (duplicate)
+sort -uo ${OUTDIR}"workinglist.db" ${OUTDIR}"workinglist.db"
+
 OUTDIR="${OUTDIR}additional/"
 mkdir -p ${OUTDIR}
 
 cat ${OUTDIR%/*/}"/HEX_list.db.tmp" >> ${OUTDIR}"database_HEX_list.db"
 rm ${OUTDIR%/*/}"/HEX_list.db.tmp"
+#TODO: remove sort (duplicate)
+sort -uo ${OUTDIR}"database_HEX_list.db" ${OUTDIR}"database_HEX_list.db"
 
 cat ${INDIR}eapol-out >> ${OUTDIR}"database_eapol-out_list.db"
-sort -u ${OUTDIR}"database_eapol-out_list.db" > ${OUTDIR}"database_eapol-out_list.db.tmp"
-cat ${OUTDIR}"database_eapol-out_list.db.tmp" > ${OUTDIR}"database_eapol-out_list.db"
-rm ${OUTDIR}"database_eapol-out_list.db.tmp"
+sort -uo ${OUTDIR}"database_eapol-out_list.db" ${OUTDIR}"database_eapol-out_list.db"
 
 cat ${INDIR}network-out >> ${OUTDIR}"database_network-out_list.db"
-sort -u ${OUTDIR}"database_network-out_list.db" > ${OUTDIR}"database_network-out_list.db.tmp"
-cat ${OUTDIR}"database_network-out_list.db.tmp" | grep "\$HEX\[.*]" >> ${OUTDIR}"database_HEX_list.db"
-cat ${OUTDIR}"database_network-out_list.db.tmp" | grep -v "\$HEX\[.*]" > ${OUTDIR}"database_network-out_list.db"
-rm ${OUTDIR}"database_network-out_list.db.tmp"
+sort -uo ${OUTDIR}"database_network-out_list.db" ${OUTDIR}"database_network-out_list.db"
+cat ${OUTDIR}"database_network-out_list.db" | grep "\$HEX\[.*]" >> ${OUTDIR}"database_HEX_list.db"
+cat ${OUTDIR}"database_network-out_list.db" | grep -v "\$HEX\[.*]" | sponge ${OUTDIR}"database_network-out_list.db"
 
 while IFS="" read p || [ -n "$p" ]
 do
@@ -88,29 +85,23 @@ do
 done < ${OUTDIR}"database_network-out_list.db"
 
 cat ${INDIR}T >> ${OUTDIR}"database_mgmtTraffic(T)_list.db"
-sort -u ${OUTDIR}"database_mgmtTraffic(T)_list.db" > ${OUTDIR}"database_mgmtTraffic(T)_list.db.tmp"
-cat ${OUTDIR}"database_mgmtTraffic(T)_list.db.tmp" | grep "\$HEX\[.*]" >> ${OUTDIR}"database_HEX_list.db"
-cat ${OUTDIR}"database_mgmtTraffic(T)_list.db.tmp" | grep -v "\$HEX\[.*]" > ${OUTDIR}"database_mgmtTraffic(T)_list.db"
-rm ${OUTDIR}"database_mgmtTraffic(T)_list.db.tmp"
+sort -uo ${OUTDIR}"database_mgmtTraffic(T)_list.db" ${OUTDIR}"database_mgmtTraffic(T)_list.db"
+cat ${OUTDIR}"database_mgmtTraffic(T)_list.db" | grep "\$HEX\[.*]" >> ${OUTDIR}"database_HEX_list.db"
+cat ${OUTDIR}"database_mgmtTraffic(T)_list.db" | grep -v "\$HEX\[.*]" | sponge ${OUTDIR}"database_mgmtTraffic(T)_list.db"
 
 while IFS="" read p || [ -n "$p" ]
 do
-	echo "${p:44}" >> ${OUTDIR%/*/}"/workinglist.db"
+#Previous p:44 , newer Version p:26
+	echo "${p:26}" >> ${OUTDIR%/*/}"/workinglist.db"
 done < ${OUTDIR}"database_mgmtTraffic(T)_list.db"
 
 cat ${INDIR}j >> ${OUTDIR}"database_john(j)_list.db"
-sort -u ${OUTDIR}"database_john(j)_list.db" > ${OUTDIR}"database_john(j).db.tmp"
-cat ${OUTDIR}"database_john(j).db.tmp" > ${OUTDIR}"database_john(j)_list.db"
-rm ${OUTDIR}"database_john(j).db.tmp"
+sort -uo ${OUTDIR}"database_john(j)_list.db" ${OUTDIR}"database_john(j)_list.db"
 
 cat ${INDIR}J >> ${OUTDIR}"database_johnRaw(J)_list.db"
-sort -u ${OUTDIR}"database_johnRaw(J)_list.db" > ${OUTDIR}"database_johnRaw(J).db.tmp"
-cat ${OUTDIR}"database_johnRaw(J).db.tmp" > ${OUTDIR}"database_johnRaw(J)_list.db"
-rm ${OUTDIR}"database_johnRaw(J).db.tmp"
+sort -uo ${OUTDIR}"database_johnRaw(J)_list.db" ${OUTDIR}"database_johnRaw(J)_list.db"
 
-sort -u ${OUTDIR}"database_HEX_list.db" > ${OUTDIR}"database_HEX_list.db.tmp"
-cat ${OUTDIR}"database_HEX_list.db.tmp" > ${OUTDIR}"database_HEX_list.db"
-rm ${OUTDIR}"database_HEX_list.db.tmp"
+sort -uo ${OUTDIR}"database_HEX_list.db" ${OUTDIR}"database_HEX_list.db"
 
 while IFS="" read p || [ -n "$p" ]
 do
@@ -118,14 +109,10 @@ do
 	whoismac -x "${oh_p##*[}" >> ${OUTDIR%/*/}"/database_HEX_converted_list.db"
 done < ${OUTDIR}"database_HEX_list.db"
 
-sort -u ${OUTDIR%/*/}"/database_HEX_converted_list.db" > ${OUTDIR%/*/}"/database_HEX_converted_list.db.tmp"
-cat ${OUTDIR%/*/}"/database_HEX_converted_list.db.tmp" >> ${OUTDIR%/*/}"/workinglist.db"
-cat ${OUTDIR%/*/}"/database_HEX_converted_list.db.tmp" > ${OUTDIR%/*/}"/database_HEX_converted_list.db"
-rm ${OUTDIR%/*/}"/database_HEX_converted_list.db.tmp"
+sort -uo ${OUTDIR%/*/}"/database_HEX_converted_list.db" ${OUTDIR%/*/}"/database_HEX_converted_list.db"
+cat ${OUTDIR%/*/}"/database_HEX_converted_list.db" >> ${OUTDIR%/*/}"/workinglist.db"
 
-sort -u ${OUTDIR%/*/}"/workinglist.db" > ${OUTDIR%/*/}"/workinglist.db.tmp"
-cat ${OUTDIR%/*/}"/workinglist.db.tmp" > ${OUTDIR%/*/}"/workinglist.db"
-rm ${OUTDIR%/*/}"/workinglist.db.tmp"
+sort -uo ${OUTDIR%/*/}"/workinglist.db" ${OUTDIR%/*/}"/workinglist.db"
 
 ./start_hashcat.sh -o "${OUTDIR%/*/}/" ${ALL}
 
@@ -133,6 +120,8 @@ if [ ${REMOVE} == true ] ;
 then
 	rm -r ${INDIR}
 fi
+
+#MISSING OUTPUT
 #---------------------------------------------------------------------------------------
 
 #cat ${INDIR}g >> ${OUTDIR}"database_GPS(g)_list.db"
@@ -155,12 +144,9 @@ fi
 
 :<<'multiline_comment'
 
-
-
-
-:<<'multiline_comment'
-
-
+Outputs with $HEX[*]:
+E,X,T,U,I,network-out
+others-> NOT TESTED
 
  wlangenpmkocl use only one GPU each task. If you have 2 GPUs, you can calculate 2 different(!) PMK lists at the same time (or two parts of the same list - you need to split your word list into 2 parts).
 
