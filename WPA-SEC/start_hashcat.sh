@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 OUTDIR="database";

@@ -16,6 +16,8 @@ while getopts ai:o:r arguments; do
 done
 shift $((OPTIND-1)) # remove parsed options and args from $@ list
 
+echo "----------${INDIR}----------"
+
 if [ "${INDIR: -1}" != "/" ]; then INDIR=${INDIR}"/"; fi
 if [ "${OUTDIR}" != "" ] ; then mkdir ${OUTDIR}; fi
 if [ "${OUTDIR: -1}" != "/" ]; then OUTDIR=${OUTDIR}"/"; fi
