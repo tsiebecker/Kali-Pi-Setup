@@ -112,7 +112,8 @@ do
 done < ${OUTDIR}"database_HEX_list.db"
 
 sort -uo ${OUTDIR%/*/}"/database_HEX_converted_list.db" ${OUTDIR%/*/}"/database_HEX_converted_list.db"
-cat ${OUTDIR%/*/}"/database_HEX_converted_list.db" >> ${OUTDIR%/*/}"/workinglist.db"
+#TODO: Separate processing of HEX 
+#cat ${OUTDIR%/*/}"/database_HEX_converted_list.db" >> ${OUTDIR%/*/}"/workinglist.db"
 
 sort -uo ${OUTDIR%/*/}"/workinglist.db" ${OUTDIR%/*/}"/workinglist.db"
 
