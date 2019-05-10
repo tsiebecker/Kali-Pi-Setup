@@ -6,7 +6,8 @@ REMOVE="";
 BACKUP_DIR="source_old";
 #Default NONCE = 8, see generate_files_one
 NONCE_ERROR_CORRECTIONS=128;
-TIME_ERROR_CORRECTIONS=600;
+#copied from common.php WPA-SEC
+TIME_ERROR_CORRECTIONS=10000;
 #TODO: "-V" to ""
 VERBOSE="-V";
 

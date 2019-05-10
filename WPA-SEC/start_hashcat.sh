@@ -3,7 +3,9 @@
 OUTDIR="database";
 ALL=false;
 NONCE_ERROR_CORRECTIONS=128;
-COOPTIONS="-a 0 -w 4 -D 1,2"
+#OPTIONAL
+#COOPTIONS="-a 0 -w 4 -D 1,2"
+COOPTIONS="-a 0 -w 4"
 
 while getopts ao:d:-: arguments; do
   case $arguments in
