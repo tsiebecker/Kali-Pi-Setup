@@ -4,13 +4,22 @@ INDIR="files";
 OUTDIR="database";
 ALL="";
 REMOVE=false;
+NO_HASHCAT=false;
 
-while getopts ai:o:r arguments; do
+while getopts ai:o:r-: arguments; do
   case $arguments in
     i )  INDIR="$OPTARG" ;;
     o )  OUTDIR="$OPTARG" ;;
     a )  ALL="-a" ;;
     r )  REMOVE=true ;;
+    - )  LONG_OPTARG="${OPTARG#*=}"
+         case $OPTARG in
+	   noHashcat    )  NO_HASHCAT=true ;;
+           noHashcat* )
+                       echo "No arg allowed for --$OPTARG option" >&2; exit 2 ;;
+           '' )        break ;; # "--" terminates argument processing
+           * )         echo "Illegal option --$OPTARG" >&2; exit 2 ;;
+         esac ;;
     \? ) exit 2 ;;  # getopts already reported the illegal option
   esac
 done
@@ -26,8 +35,11 @@ cat ${INDIR}o >> ${OUTDIR}"database_best.hccapx"
 cat ${INDIR}o >> ${OUTDIR}"database_all.hccapx"
 cat ${INDIR}O >> ${OUTDIR}"database_all.hccapx"
 
-cat ${INDIR}z >> ${OUTDIR}"database_pmkid_only.hccapx"
-sort -uo ${OUTDIR}"database_pmkid_only.hccapx" ${OUTDIR}"database_pmkid_only.hccapx"
+cat ${INDIR}k >> ${OUTDIR}"database_pmkid_only_new.PMKID"
+sort -uo ${OUTDIR}"database_pmkid_only_new.PMKID" ${OUTDIR}"database_pmkid_only_new.PMKID"
+
+cat ${INDIR}z >> ${OUTDIR}"database_pmkid_only.PMKID"
+sort -uo ${OUTDIR}"database_pmkid_only.PMKID" ${OUTDIR}"database_pmkid_only.PMKID"
 
 cat ${INDIR}E >> ${OUTDIR}"database_probe(E)_list.db"
 sort -uo ${OUTDIR}"database_probe(E)_list.db" ${OUTDIR}"database_probe(E)_list.db"
@@ -45,6 +57,11 @@ sort -uo ${OUTDIR}"database_username(U)_list.db" ${OUTDIR}"database_username(U)_
 cat ${OUTDIR}"database_username(U)_list.db" | grep "\$HEX\[.*]" >> ${OUTDIR}"HEX_list.db.tmp"
 cat ${OUTDIR}"database_username(U)_list.db" | grep -v "\$HEX\[.*]" | sponge ${OUTDIR}"database_username(U)_list.db"
 
+#TODO check if sorted makes sense
+#TODO check about $HEX[]
+cat ${INDIR}M >> ${OUTDIR}"database_IMSI_number(M)_list.db"
+sort -uo ${OUTDIR}"database_IMSI_number(M)_list.db" ${OUTDIR}"database_IMSI_number(M)_list.db"
+
 cat ${INDIR}P >> ${OUTDIR}"database_pmk(P)_list.db"
 sort -uo ${OUTDIR}"database_pmk(P)_list.db" ${OUTDIR}"database_pmk(P)_list.db"
 
@@ -54,9 +71,11 @@ sort -uo ${OUTDIR}"workinglist.db" ${OUTDIR}"workinglist.db"
 
 cat ${INDIR}X >> ${OUTDIR}"database_client_probe(X)_list.db"
 sort -uo ${OUTDIR}"database_client_probe(X)_list.db" ${OUTDIR}"database_client_probe(X)_list.db"
+#TODO see hcxtools changelog 12.02.2019 (autohex enabled)
 cat ${OUTDIR}"database_client_probe(X)_list.db" | grep "\$HEX\[.*]" >> ${OUTDIR}"HEX_list.db.tmp"
 cat ${OUTDIR}"database_client_probe(X)_list.db" | grep -v "\$HEX\[.*]" | sponge ${OUTDIR}"database_client_probe(X)_list.db"
 
+#TODO check functionality after changelog 12.02.2019
 while IFS="" read p || [ -n "$p" ]
 do
 	echo "${p#*:}" >> ${OUTDIR}"workinglist.db"
@@ -117,7 +136,10 @@ sort -uo ${OUTDIR%/*/}"/database_HEX_converted_list.db" ${OUTDIR%/*/}"/database_
 
 sort -uo ${OUTDIR%/*/}"/workinglist.db" ${OUTDIR%/*/}"/workinglist.db"
 
-./start_hashcat.sh -o "${OUTDIR%/*/}/" ${ALL}
+if [ ${NO_HASHCAT} != true ] ;
+then
+	./start_hashcat.sh -o "${OUTDIR%/*/}/" ${ALL}
+fi
 
 if [ ${REMOVE} == true ] ;
 then

@@ -39,7 +39,10 @@ if [ "${BACKUP_DIR: -1}" != "/" ]; then BACKUP_DIR="${BACKUP_DIR}/"; fi
 
 time="$(echo -e "$(date)" | tr -d '[:space:]')/"
 
-hcxpcaptool -o ${OUTDIR}o -O ${OUTDIR}O -z ${OUTDIR}z -j ${OUTDIR}j -J ${OUTDIR}J -E ${OUTDIR}E -I ${OUTDIR}I -U ${OUTDIR}U -P ${OUTDIR}P -T ${OUTDIR}T -X ${OUTDIR}X -g ${OUTDIR}g --netntlm-out=${OUTDIR}netntlm-out --md5-out=${OUTDIR}md5-out --md5-john-out=${OUTDIR}md5-john-out --tacacsplus-out=${OUTDIR}tacacsplus-out --eapol-out=${OUTDIR}eapol-out --network-out=${OUTDIR}network-out --hexdump-out=${OUTDIR}hexdump-out --hccap-out=${OUTDIR}hccap-out --hccap-raw-out=${OUTDIR}hccap-raw-out --nonce-error-corrections=${NONCE_ERROR_CORRECTIONS} --time-error-corrections=${TIME_ERROR_CORRECTIONS} ${VERBOSE} "${INFILE[@]}" && if [ ${REMOVE} == true ]; then mkdir -p ${BACKUP_DIR}${time} ; for f in ${INFILE[@]} ; do if [ "${f:0:1}" == "/" ]; then f="${f:1:${#f}-1}" ; fi ; f_new="${f#*/}" ; fdir="${BACKUP_DIR}${time}${f_new}" ; mkdir -p ${fdir%/*} ; mv ${f} ${BACKUP_DIR}${time}${f_new} ; done ; fi 
+hcxpcaptool -o ${OUTDIR}o -O ${OUTDIR}O -k ${OUTDIR}k -z ${OUTDIR}z -j ${OUTDIR}j -J ${OUTDIR}J -E ${OUTDIR}E -X ${OUTDIR}X -I ${OUTDIR}I -U ${OUTDIR}U -M ${OUTDIR}M -P ${OUTDIR}P -T ${OUTDIR}T -g ${OUTDIR}g --time-error-corrections=${TIME_ERROR_CORRECTIONS} --nonce-error-corrections=${NONCE_ERROR_CORRECTIONS} --netntlm-out=${OUTDIR}netntlm-out --md5-out=${OUTDIR}md5-out --md5-john-out=${OUTDIR}md5-john-out --tacacsplus-out=${OUTDIR}tacacsplus-out --eapol-out=${OUTDIR}eapol-out --network-out=${OUTDIR}network-out --hexdump-out=${OUTDIR}hexdump-out --hccap-out=${OUTDIR}hccap-out ${VERBOSE} "${INFILE[@]}" && if [ ${REMOVE} == true ]; then mkdir -p ${BACKUP_DIR}${time} ; for f in ${INFILE[@]} ; do if [ "${f:0:1}" == "/" ]; then f="${f:1:${#f}-1}" ; fi ; f_new="${f#*/}" ; fdir="${BACKUP_DIR}${time}${f_new}" ; mkdir -p ${fdir%/*} ; mv ${f} ${BACKUP_DIR}${time}${f_new} ; done ; fi 
+
+#TODO reintegrate --hccap-raw-out=${OUTDIR}hccap-raw-out
+
 
 :<<'multiline_comment'
 hcxpcaptool 5.1.4 (C) 2019 ZeroBeat
