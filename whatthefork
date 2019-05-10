@@ -27,8 +27,8 @@ verbose = False
 openbrwser = False
 
 ### Github user and repo to check ###
-usr = "poerschke"
-rpo = "Uniscan"
+usr = "seemoo-lab"
+rpo = "nexmon"
 
 ### Placeholders ###
 branches_ahead = 0

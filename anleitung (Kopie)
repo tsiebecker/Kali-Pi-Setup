@@ -1,0 +1,82 @@
+auto lo
+iface lo inet loopback
+
+allow-hotplug eth0
+iface eth0 inet manual
+bond-mode active-backup
+bond-master bond0
+bond-primary eth0
+
+allow-hotplug wlan0
+iface wlan0 inet manual
+wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
+bond-mode active-backup
+bond-master bond0
+bond-primary eth0
+wpa-ap-scan 1
+wpa-scan-ssid 1
+wireless-power off
+
+allow-hotplug usb0
+iface usb0 inet dhcp
+
+iface wlan1 inet manual
+wpa-ap-scan 1
+wpa-scan-ssid 1
+wireless-power off
+
+iface wlan2 inet manual
+wpa-ap-scan 1
+wpa-scan-ssid 1
+wireless-power off
+
+auto bond0
+iface bond0 inet dhcp
+dns-nameservers 1.1.1.1
+bond-mode active-backup
+bond-slaves none
+bond-primary eth0
+bond-miimon 100
+#bond-downdelay 200
+bond-updelay 200
+
+auto pan0
+iface pan0 inet static
+address 192.168.100.1
+netmask 255.255.255.0
+network 192.168.100.0
+broadcast 192.168.100.255
+bridge_ports panBase
+bridge_stp off
+bridge_fd 0
+bridge_maxwait 0
+
+## vorhandene Regeln und Ketten zuerst löschen
+up /sbin/iptables -F
+ up /sbin/iptables -X
+  up /sbin/iptables -t nat -F
+
+## Maskieren der LAN-Schnittstelle, Port-Forwarding & Nat aktivieren
+up /sbin/iptables -A FORWARD -o bond0 -i pan0 -m conntrack --ctstate NEW -j ACCEPT
+ up /sbin/iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+  up /sbin/iptables -t nat -A POSTROUTING -o bond0 -j MASQUERADE 
+   up /sbin/sysctl -w net.ipv4.ip_forward=1 
+
+interface=pan0      # Use interface wlan0
+no-dhcp-interface=bond0
+listen-address=192.168.100.1 # Explicitly specify the address to listen on
+#bind-interfaces      # Bind to the interface to make sure we aren't sending things elsewhere  
+server=1.1.1.1       # Forward DNS requests to Google DNS
+domain-needed        # Don't forward short names
+#bogus-priv           # Never forward addresses in the non-routed address spaces.  
+dhcp-range=interface:pan0,192.168.100.50,192.168.100.150,12h # Assign IP addresses between 172.24.1.50 $
+
+
+modprobe bnep
+hciconfig hci0 lm master,accept
+hciconfig hci0 sspmode 0
+bt-pan server pan0 &
+blueagent5 --pin 7395 &
+
+
+
